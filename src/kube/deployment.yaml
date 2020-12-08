@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: endpoint-actuator-deployment
+spec:
+  selector:
+    matchLabels:
+      app: endpoint-actuator
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: endpoint-actuator
+    spec:
+      containers:
+        - name: endpoint-actuator
+          image:  schimidt/endpoint-actuator:2.0.0
+          ports:
+            - containerPort: 8080
