@@ -1,5 +1,6 @@
 package org.example.actuator;
 
+import io.micrometer.core.instrument.MeterRegistry;
 import org.example.actuator.metrics.Metric;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Description;
@@ -19,6 +20,9 @@ public class SampleController {
 
 	@Autowired
 	private HelloWorldService helloWorldService;
+
+	@Autowired
+	private MeterRegistry registry;
 
 	@RequestMapping("/ok")
 	@ResponseBody

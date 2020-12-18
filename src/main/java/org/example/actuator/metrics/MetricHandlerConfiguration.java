@@ -1,18 +1,18 @@
 package org.example.actuator.metrics;
 
+import io.micrometer.core.aop.TimedAspect;
+import io.micrometer.core.instrument.MeterRegistry;
 import org.springframework.aop.Advisor;
 import org.springframework.aop.Pointcut;
 import org.springframework.aop.support.DefaultPointcutAdvisor;
 import org.springframework.aop.support.annotation.AnnotationMatchingPointcut;
-import org.springframework.boot.actuate.autoconfigure.MetricFilterAutoConfiguration;
-import org.springframework.boot.actuate.metrics.CounterService;
-import org.springframework.boot.actuate.metrics.GaugeService;
-import org.springframework.boot.autoconfigure.AutoConfigureAfter;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.actuate.autoconfigure.metrics.MeterRegistryCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 
 @Configuration
-@AutoConfigureAfter(MetricFilterAutoConfiguration.class)
 public class MetricHandlerConfiguration {
 
     @Bean
@@ -22,12 +22,20 @@ public class MetricHandlerConfiguration {
     }
 
     @Bean
-    public MetricHandler metricHandlerAdvice(MetricSender metricSender) {
-        return new MetricHandler(metricSender);
+    MeterRegistryCustomizer<MeterRegistry> configurer(@Value("${spring.application.name}") String applicationName) {
+        return registry -> registry.config().commonTags("application", applicationName);
     }
 
     @Bean
-    public MetricSender metricSender(CounterService counterService, GaugeService gaugeService) {
-        return new MetricSender(counterService, gaugeService);
+    @Primary
+    public MeterRegistry customizeRegistry(MeterRegistry registry, @Value("${spring.application.name}") String applicationName) {
+        registry.config().commonTags("application", applicationName);
+
+        return registry;
+    }
+
+    @Bean
+    public TimedAspect timedAspect(MeterRegistry registry) {
+        return new TimedAspect(registry);
     }
 }

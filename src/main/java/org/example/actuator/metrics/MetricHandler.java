@@ -1,57 +1,48 @@
 package org.example.actuator.metrics;
 
+import io.micrometer.core.instrument.MeterRegistry;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
-import org.springframework.util.StopWatch;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Method;
 
+import static org.example.actuator.metrics.MetricTypeSender.*;
+
+@Component
 public class MetricHandler implements MethodInterceptor {
+    private final MeterRegistry meterRegistry;
 
-    private final MetricSender metricSender;
-
-    private final String ATTEMPTED = ".attempted";
-    private final String SUCCEEDED = ".succeeded";
-    private final String FAILED = ".failed";
-    private final String WARNING = ".warning";
-    private final String ELAPSED_TIME = ".elapsedTime";
-
-    public MetricHandler(MetricSender metricSender) {
-        this.metricSender = metricSender;
+    @Autowired
+    MetricHandler(MeterRegistry meterRegistry) {
+        this.meterRegistry = meterRegistry;
     }
 
     @Override
     public Object invoke(MethodInvocation methodInvocation) throws Throwable {
-        StopWatch stopWatch = new StopWatch();
-
         Metric metric = getMetric(methodInvocation);
         String prefix = metric.prefix();
         Class<? extends Throwable>[] warningExceptions = metric.warningFor();
 
         try {
-            metricSender.send(attempted(prefix));
-
-            stopWatch.start();
+            ATTEMPTED.increment(prefix, meterRegistry);
             Object result = methodInvocation.proceed();
-            metricSender.send(succeeded(prefix));
+            SUCCEEDED.increment(prefix, meterRegistry);
+
             return result;
 
         } catch (Exception e) {
             for (Class<? extends Throwable> warningException : warningExceptions) {
                 if (warningException.isAssignableFrom(e.getClass())) {
-                    metricSender.send(warning(prefix));
+                    WARNING.increment(prefix, meterRegistry);
                     throw e;
                 }
             }
 
-            metricSender.send(failed(prefix));
+            FAILED.increment(prefix, meterRegistry);
             throw e;
-
-        } finally {
-            stopWatch.stop();
-            metricSender.sendElapsedTime(elapsedTime(prefix), stopWatch.getTotalTimeMillis());
         }
-
     }
 
     private Metric getMetric(MethodInvocation methodInvocation) throws NoSuchMethodException {
@@ -61,25 +52,5 @@ public class MetricHandler implements MethodInterceptor {
                 methodInvocation.getMethod().getParameterTypes());
 
         return methodFromBaseClass.getAnnotation(Metric.class);
-    }
-
-    private MetricName attempted(String prefix) {
-        return new MetricName(prefix + ATTEMPTED);
-    }
-
-    private MetricName succeeded(String prefix) {
-        return new MetricName(prefix + SUCCEEDED);
-    }
-
-    private MetricName warning(String prefix) {
-        return new MetricName(prefix + WARNING);
-    }
-
-    private MetricName failed(String prefix) {
-        return new MetricName(prefix + FAILED);
-    }
-
-    private MetricName elapsedTime(String prefix) {
-        return new MetricName(prefix + ELAPSED_TIME);
     }
 }

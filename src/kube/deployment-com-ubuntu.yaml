@@ -1,11 +1,11 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: endpoint-actuator-deployment
+  name: endpoint-actuator-outro
 spec:
   selector:
     matchLabels:
-      app: endpoint-actuator
+      app: endpoint-actuator-outro
   replicas: 5
   template:
     metadata:
@@ -14,4 +14,6 @@ spec:
     spec:
       containers:
         - name: endpoint-actuator
-          image:  schimidt/endpoint-actuator:4.0.0
+          image:  ubuntu:18.04
+          command: [ "/bin/sh" ]
+          args: [ "-c", "while true; do echo hello; sleep 10;done" ]
