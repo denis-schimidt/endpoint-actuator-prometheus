@@ -6,7 +6,7 @@ spec:
   selector:
     matchLabels:
       app: endpoint-actuator
-  replicas: 5
+  replicas: 2
   template:
     metadata:
       labels:
@@ -14,4 +14,5 @@ spec:
     spec:
       containers:
         - name: endpoint-actuator
-          image:  schimidt/endpoint-actuator:4.0.0
+          image:  schimidt/endpoint-actuator:5.0.0
+

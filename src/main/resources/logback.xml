@@ -1,6 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
-	<include resource="org/springframework/boot/logging/logback/base.xml"/>	
-	<!-- logger name="org.example" level="DEBUG"/-->
-	<!-- logger name="org.springframework.security" level="DEBUG"/-->
+	<appender name="Console"
+			  class="ch.qos.logback.core.ConsoleAppender">
+		<layout class="ch.qos.logback.classic.PatternLayout">
+			<Pattern>
+				%blue(%d{ISO8601}) %highlight(%-5level) [%blue(%t)] %yellow(%C{1.}): %msg%n%throwable
+			</Pattern>
+		</layout>
+	</appender>
+
+	<!-- LOG everything at INFO level -->
+	<root level="info">
+		<appender-ref ref="Console" />
+	</root>
 </configuration>

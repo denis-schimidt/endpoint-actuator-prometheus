@@ -5,10 +5,11 @@ metadata:
   labels:
     app: endpoint-actuator
 spec:
-  ports:
-    - port: 8080
-      targetPort: http
-      protocol: TCP
-      name: http
+  type: LoadBalancer
   selector:
     app: endpoint-actuator
+  ports:
+    - port: 80
+      targetPort: 8080
+      protocol: TCP
+      name: web
