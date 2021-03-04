@@ -1,0 +1,23 @@
+# Para utilizar esse recurso foi instalado o https://github.com/prometheus-community/helm-charts
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  generation: 1
+  labels:
+    app: endpoint-actuator
+    # release - tag necessária para funcionamento do monitoramento do prometheus stack.
+    # O valor é baseado no nome da instalação da stack
+    release: prometheus-stack
+  name: prom-endpoint-actuator
+  namespace: dev
+spec:
+  endpoints:
+  - path: /actuator/prometheus
+    port: web
+  namespaceSelector:
+    matchNames:
+    - dev
+  selector:
+    matchLabels:
+      app: endpoint-actuator
+
